@@ -1,11 +1,11 @@
 exports.handler = async (event) => {
 
-  const urlPath = event.path.replace("/api/proxy/", "");
+  const id = event.path.replace("/api/proxy/", "");
 
-  const baseUrl = "https://ucdn.starhubgo.com/bpk-tv/HubSensasiHD/output/manifest.mpd";
+  const baseUrl = "https://ucdn.starhubgo.com/bpk-tv/";
 
-  // kalau kau nak ignore path sepenuhnya:
-  const targetUrl = baseUrl;
+  const targetUrl =
+    baseUrl + id + "/output/manifest.mpd";
 
   try {
     const res = await fetch(targetUrl);
