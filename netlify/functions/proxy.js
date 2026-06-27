@@ -1,26 +1,24 @@
-export default async (req) => {
+module.exports = async (req) => {
   try {
-    const url = new URL(req.url);
-    const get = url.searchParams.get("get") || "";
-
     const mpdUrl =
-      "https://ucdn.starhubgo.com/bpk-tv/HubSensasiHD/output/manifest.mpd" +
+      "https://ucdn.starhubgo.com/bpk-tv/HubSensasiHD/output/manifest.mpd";
 
     const res = await fetch(mpdUrl);
-
     const text = await res.text();
 
-    return new Response(text, {
-      status: res.status,
+    return {
+      statusCode: res.status,
       headers: {
         "content-type":
-          res.headers.get("content-type") || "text/plain",
+          res.headers.get("content-type") || "application/dash+xml",
         "access-control-allow-origin": "*",
       },
-    });
+      body: text,
+    };
   } catch (err) {
-    return new Response(err.stack || err.message, {
-      status: 500,
-    });
+    return {
+      statusCode: 500,
+      body: err.message,
+    };
   }
 };
