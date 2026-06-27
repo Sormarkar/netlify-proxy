@@ -1,5 +1,1 @@
-[[redirects]]
-from = "/api/*"
-to = "https://ucdn.starhubgo.com/:splat"
-status = 200
-force = true
+
