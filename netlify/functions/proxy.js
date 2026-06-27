@@ -1,17 +1,24 @@
 exports.handler = async (event) => {
 
   const id = event.path.replace("/api/proxy/", "");
-
   const baseUrl = "https://ucdn.starhubgo.com/bpk-tv/";
-
-  const targetUrl =
-    baseUrl + id + "/output/manifest.mpd";
+  const targetUrl = baseUrl + id + "/output/manifest.mpd";
 
   try {
     const res = await fetch(targetUrl);
+    const contentType = res.headers.get("content-type") || "";
 
     const data = await res.text();
 
+    // ❌ detect HTML block page
+    if (contentType.includes("text/html") || data.trim().startsWith("<html")) {
+      return {
+        statusCode: 403,
+        body: "Blocked or invalid stream response"
+      };
+    }
+
+    // ✔️ valid MPD
     return {
       statusCode: 200,
       headers: {
