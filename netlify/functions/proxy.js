@@ -5,7 +5,6 @@ export default async (req) => {
 
     const mpdUrl =
       "https://ucdn.starhubgo.com/bpk-tv/HubSensasiHD/output/manifest.mpd" +
-      get;
 
     const res = await fetch(mpdUrl);
 
