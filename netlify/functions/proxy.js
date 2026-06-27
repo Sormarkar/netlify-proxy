@@ -1,15 +1,14 @@
 exports.handler = async (event) => {
 
   const id = event.path.replace("/api/proxy/", "");
-  const baseUrl = "http://nowult.accesscam.org/hubsports/HubSensasiHD.mpd.link";
+
+  const targetUrl = "http://nowult.accesscam.org/hubsports/" + id + ".mpd.link";
 
   try {
     const res = await fetch(targetUrl);
     const contentType = res.headers.get("content-type") || "";
-
     const data = await res.text();
 
-    // ❌ detect HTML block page
     if (contentType.includes("text/html") || data.trim().startsWith("<html")) {
       return {
         statusCode: 403,
@@ -17,7 +16,6 @@ exports.handler = async (event) => {
       };
     }
 
-    // ✔️ valid MPD
     return {
       statusCode: 200,
       headers: {
@@ -30,7 +28,7 @@ exports.handler = async (event) => {
   } catch (err) {
     return {
       statusCode: 500,
-      body: "Proxy error"
+      body: err.toString()
     };
   }
 };
