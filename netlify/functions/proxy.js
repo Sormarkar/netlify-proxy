@@ -1,34 +1,19 @@
-exports.handler = async (event) => {
+export default async (req) => {
+  const url = new URL(req.url);
+  const get = url.searchParams.get("get") || "";
 
-  const id = event.path.replace("/api/proxy/", "");
+  const mpdUrl =
+    "https://ucdn.starhubgo.com/bpk-tv/HubSensasiHD/output/manifest.mpd" +
+    get;
 
-  const targetUrl = "http://nowult.accesscam.org/hubsports/" + id + ".mpd.link";
+  const res = await fetch(mpdUrl);
 
-  try {
-    const res = await fetch(targetUrl);
-    const contentType = res.headers.get("content-type") || "";
-    const data = await res.text();
+  const data = await res.text();
 
-    if (contentType.includes("text/html") || data.trim().startsWith("<html")) {
-      return {
-        statusCode: 403,
-        body: "Blocked or invalid stream response"
-      };
+  return new Response(data, {
+    headers: {
+      "content-type": "application/dash+xml",
+      "access-control-allow-origin": "*"
     }
-
-    return {
-      statusCode: 200,
-      headers: {
-        "Content-Type": "application/dash+xml",
-        "Access-Control-Allow-Origin": "*"
-      },
-      body: data
-    };
-
-  } catch (err) {
-    return {
-      statusCode: 500,
-      body: err.toString()
-    };
-  }
+  });
 };
