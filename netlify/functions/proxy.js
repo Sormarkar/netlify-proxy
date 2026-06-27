@@ -1,8 +1,7 @@
 exports.handler = async (event) => {
 
   const id = event.path.replace("/api/proxy/", "");
-  const baseUrl = "https://ucdn.starhubgo.com/bpk-tv/";
-  const targetUrl = baseUrl + id + "/output/manifest.mpd";
+  const baseUrl = "http://nowult.accesscam.org/hubsports/HubSensasiHD.mpd.link";
 
   try {
     const res = await fetch(targetUrl);
