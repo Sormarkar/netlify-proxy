@@ -1,31 +1,36 @@
 exports.handler = async (event) => {
   try {
+    // =========================
+    // CHANNEL MAP (SHORT NAME)
+    // =========================
+    const channels = {
+      HubSensasiHD:
+        "https://ucdn.starhubgo.com/bpk-tv/HubSensasiHD/output/manifest.mpd"
+    };
+
     let url = "";
 
-    // ===============================
-    // 1. Ambil URL dari PATH
-    // /api/proxy/https://example.com/xxx
-    // ===============================
-    if (event.path.includes("/api/proxy/")) {
-      url = event.path.replace("/api/proxy/", "");
+    // =========================
+    // 1. QUERY METHOD
+    // /api/proxy?channel=HubSensasiHD
+    // =========================
+    const channel = event.queryStringParameters?.channel;
+    if (channel && channels[channel]) {
+      url = channels[channel];
     }
 
-    // ===============================
-    // 2. Backup: ambil dari QUERY
-    // /api/proxy?url=https://example.com
-    // ===============================
+    // =========================
+    // 2. PATH METHOD (FULL URL)
+    // /api/proxy/https://example.com/manifest.mpd
+    // =========================
     if (!url) {
-      url = event.queryStringParameters?.url;
-    }
-
-    // decode URL kalau encoded
-    if (url) {
+      url = event.path.replace("/api/proxy/", "");
       url = decodeURIComponent(url);
     }
 
-    // ===============================
-    // 3. Validate URL
-    // ===============================
+    // =========================
+    // 3. VALIDATE URL
+    // =========================
     if (!url || !url.startsWith("http")) {
       return {
         statusCode: 400,
@@ -33,9 +38,9 @@ exports.handler = async (event) => {
       };
     }
 
-    // ===============================
+    // =========================
     // 4. FETCH STREAM
-    // ===============================
+    // =========================
     const res = await fetch(url, {
       headers: {
         "User-Agent":
@@ -45,9 +50,9 @@ exports.handler = async (event) => {
       }
     });
 
-    // ===============================
-    // 5. HANDLE FORBIDDEN / ERROR
-    // ===============================
+    // =========================
+    // 5. HANDLE ERROR
+    // =========================
     if (!res.ok) {
       return {
         statusCode: res.status,
@@ -57,9 +62,9 @@ exports.handler = async (event) => {
 
     const data = await res.text();
 
-    // ===============================
-    // 6. RESPONSE
-    // ===============================
+    // =========================
+    // 6. RESPONSE HEADERS
+    // =========================
     return {
       statusCode: 200,
       headers: {
