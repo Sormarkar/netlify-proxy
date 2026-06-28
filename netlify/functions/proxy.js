@@ -1,15 +1,31 @@
 exports.handler = async (event) => {
-  const url = event.queryStringParameters.url;
+  try {
+    const fullPath = event.path; 
+    const url = fullPath.replace("/.netlify/functions/proxy/", "");
 
-  const res = await fetch(url);
-  const text = await res.text();
+    if (!url) {
+      return {
+        statusCode: 400,
+        body: "Missing URL"
+      };
+    }
 
-  return {
-    statusCode: res.status,
-    headers: {
-      "content-type": "application/dash+xml",
-      "access-control-allow-origin": "*"
-    },
-    body: text
-  };
+    const res = await fetch(url);
+    const data = await res.text();
+
+    return {
+      statusCode: 200,
+      headers: {
+        "Content-Type": "application/dash+xml",
+        "Access-Control-Allow-Origin": "*"
+      },
+      body: data
+    };
+
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: err.toString()
+    };
+  }
 };
