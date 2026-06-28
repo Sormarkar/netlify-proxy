@@ -1,12 +1,17 @@
 exports.handler = async (event) => {
   try {
-    const fullPath = event.path; 
-    const url = fullPath.replace("/.netlify/functions/proxy/", "");
+    let fullPath = event.path || "";
 
-    if (!url) {
+    // buang prefix api/proxy/
+    let url = fullPath.replace("/api/proxy/", "");
+
+    // decode kalau ada encoding
+    url = decodeURIComponent(url);
+
+    if (!url.startsWith("http")) {
       return {
         statusCode: 400,
-        body: "Missing URL"
+        body: "Invalid URL: " + url
       };
     }
 
@@ -16,8 +21,8 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers: {
-        "Content-Type": "application/dash+xml",
-        "Access-Control-Allow-Origin": "*"
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/dash+xml"
       },
       body: data
     };
