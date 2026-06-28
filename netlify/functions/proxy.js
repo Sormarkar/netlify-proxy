@@ -1,28 +1,72 @@
 exports.handler = async (event) => {
   try {
-    let fullPath = event.path || "";
+    let url = "";
 
-    // buang prefix api/proxy/
-    let url = fullPath.replace("/api/proxy/", "");
+    // ===============================
+    // 1. Ambil URL dari PATH
+    // /api/proxy/https://example.com/xxx
+    // ===============================
+    if (event.path.includes("/api/proxy/")) {
+      url = event.path.replace("/api/proxy/", "");
+    }
 
-    // decode kalau ada encoding
-    url = decodeURIComponent(url);
+    // ===============================
+    // 2. Backup: ambil dari QUERY
+    // /api/proxy?url=https://example.com
+    // ===============================
+    if (!url) {
+      url = event.queryStringParameters?.url;
+    }
 
-    if (!url.startsWith("http")) {
+    // decode URL kalau encoded
+    if (url) {
+      url = decodeURIComponent(url);
+    }
+
+    // ===============================
+    // 3. Validate URL
+    // ===============================
+    if (!url || !url.startsWith("http")) {
       return {
         statusCode: 400,
         body: "Invalid URL: " + url
       };
     }
 
-    const res = await fetch(url);
+    // ===============================
+    // 4. FETCH STREAM
+    // ===============================
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+        "Referer": "https://ucdn.starhubgo.com/",
+        "Origin": "https://ucdn.starhubgo.com"
+      }
+    });
+
+    // ===============================
+    // 5. HANDLE FORBIDDEN / ERROR
+    // ===============================
+    if (!res.ok) {
+      return {
+        statusCode: res.status,
+        body: `Upstream error: ${res.status}`
+      };
+    }
+
     const data = await res.text();
 
+    // ===============================
+    // 6. RESPONSE
+    // ===============================
     return {
       statusCode: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/dash+xml"
+        "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+        "Content-Type": "application/dash+xml",
+        "Cache-Control": "public, max-age=60"
       },
       body: data
     };
@@ -30,7 +74,7 @@ exports.handler = async (event) => {
   } catch (err) {
     return {
       statusCode: 500,
-      body: err.toString()
+      body: "Function error: " + err.toString()
     };
   }
 };
